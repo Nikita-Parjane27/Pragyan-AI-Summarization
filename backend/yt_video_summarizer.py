@@ -6,6 +6,7 @@ import os
 
 load_dotenv()
 
+
 def extract_video_id(url):
     parsed_url = urlparse(url)
 
@@ -21,10 +22,10 @@ def extract_video_id(url):
 
 
 def video_summary(link):
-   client = genai.Client(
-    api_key=os.getenv("GENERATIVEAI_API_KEY"),
-    http_options={"api_version": "v1"}
-)
+    client = genai.Client(
+        api_key=os.getenv("GENERATIVEAI_API_KEY"),
+        http_options={"api_version": "v1"}
+    )
 
     video_id = extract_video_id(link)
 
@@ -43,12 +44,12 @@ def video_summary(link):
     transcript_text = transcript_text[:12000]
 
     prompt = f"""
-    Summarize the following YouTube video transcript clearly and concisely.
-    Provide plain text summary only.
+Summarize the following YouTube video transcript clearly and concisely.
+Provide plain text summary only.
 
-    Transcript:
-    {transcript_text}
-    """
+Transcript:
+{transcript_text}
+"""
 
     response = client.models.generate_content(
         model="gemini-1.5-flash",

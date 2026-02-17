@@ -7,3 +7,8 @@ python-docx
 youtube-transcript-api
 SpeechRecognition
 PyPDF2
+psycopg2-binary
+flask-cors
+flask-bcrypt
+flask-jwt-extended
+gunicorn

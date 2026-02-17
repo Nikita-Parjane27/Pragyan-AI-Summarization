@@ -1,17 +1,15 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-# import json
 import pandas as pd
 import uuid
 import os
-# import custom functions
+
+# Custom functions
 from text_summarizer import get_text_summary
 from pdf_summarizer import get_pdf_summary
 from docx_summarizer import get_docx_summary
 from audio_summarizer import audio_summary
 from excel_csv_summarizer import excel_summary
-
-# from article_summarizer import article_summary        
 from article_summarizer import article_summary
 from yt_video_summarizer import video_summary
 from image_summary import image_summary
@@ -20,201 +18,260 @@ from docx_chatbot import get_chatbot_response1
 from sentiment_analysis import get_sentiment_analysis
 
 
-app = Flask(__name__) 
+app = Flask(__name__)
 CORS(app)
 
+DATA_FOLDER = "data"
+os.makedirs(DATA_FOLDER, exist_ok=True)
+
+
+# =============================
+# TEST ROUTE
+# =============================
 @app.route('/test', methods=['GET'])
 def test():
     return "Hello, World!"
 
+
+# =============================
+# TEXT SUMMARY
+# =============================
 @app.route('/text-summarize', methods=['POST'])
-def summarize():
-    data = request.get_json()
-    text = data['text']
-    summarized_text = get_text_summary(text=text)
-    return jsonify({"summary": summarized_text})
+def summarize_text():
+    try:
+        data = request.get_json()
+        text = data.get('text')
+
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        summary = get_text_summary(text)
+        return jsonify({"summary": summary})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+# =============================
+# PDF SUMMARY
+# =============================
 @app.route('/pdf-summary', methods=['POST'])
-def pdf_summary():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+def pdf_summary_api():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        file = request.files['file']
 
-    if not file.filename.endswith('.pdf'):
-        return jsonify({"error": "Invalid file type. Please upload a .pdf file"}), 400
-    summary = get_pdf_summary(file)
-    return jsonify({"summary": summary})
+        if not file.filename.endswith('.pdf'):
+            return jsonify({"error": "Invalid file type. Upload PDF"}), 400
+
+        summary = get_pdf_summary(file)
+        return jsonify({"summary": summary})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+# =============================
+# DOCX SUMMARY
+# =============================
+@app.route('/docx-summary', methods=['POST'])
+def docx_summary_api():
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-@app.route('/docx-summary',methods=['POST'])
-def docx_summary():
-   
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        file = request.files['file']
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        if not file.filename.endswith('.docx'):
+            return jsonify({"error": "Invalid file type. Upload DOCX"}), 400
 
-    if not file.filename.endswith('.docx'):
-        return jsonify({"error": "Invalid file type. Please upload a .docx file"}), 400
+        summary = get_docx_summary(file)
+        return jsonify({"summary": summary})
 
-    summary = get_docx_summary(file)
-    return jsonify({"summary": summary})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/excel-summary',methods=['POST'])
+
+# =============================
+# EXCEL / CSV SUMMARY
+# =============================
+@app.route('/excel-summary', methods=['POST'])
 def excel_summary_api():
-   
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
-    print(file.filename)
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        file = request.files['file']
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        filepath = os.path.join(DATA_FOLDER, filename)
 
-    # if file.filename not in ('.xlsx', '.xls'):
-    #     return jsonify({"Error" : "Unsupported file format. Please upload an Excel file (.xlsx or .xls)"})
+        file.save(filepath)
 
-    if  file.filename.endswith(".xlsx"):
-        try:
-            df = pd.read_excel(file, engine="openpyxl")
-            df.to_csv('./data/'+file.filename, index=False)
-            summary = excel_summary(file.filename)
-            os.remove(os.path.join('data', file.filename))
-            
-            
+        summary = excel_summary(filename)
 
-        except Exception as e:
-            return jsonify({"error": f"Error reading Excel file: {e}"}), 400
-        # filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-        # file.save(os.path.join('data', filename))
-        # df = pd.read_excel(file,engine="openpyxl")
-        
-    else :    
-        if file.filename.endswith('.csv'):
-            filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-            file.save(os.path.join('data', filename))
-            summary = excel_summary(filename)
-            os.remove(os.path.join('data', filename))
+        os.remove(filepath)
+
+        return jsonify({"summary": summary})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-        else:
-            return jsonify({"error": "Invalid file type"}), 400
-        
-
-    return jsonify({"summary": summary['excel_summary'].content})
-
-@app.route('/article-summary',methods=['POST'])
+# =============================
+# ARTICLE SUMMARY
+# =============================
+@app.route('/article-summary', methods=['POST'])
 def article_summary_api():
-    data = request.get_json()
-    link = data['link'] 
-    ans = article_summary(link)
-    print(ans['summary'].content)
-    return jsonify({'article_summary':ans['summary'].content})
+    try:
+        data = request.get_json()
+        link = data.get('link')
+
+        if not link:
+            return jsonify({"error": "No link provided"}), 400
+
+        result = article_summary(link)
+        return jsonify({"article_summary": result["summary"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
-@app.route('/youtube-summary',methods=['POST'])
+# =============================
+# YOUTUBE SUMMARY
+# =============================
+@app.route('/youtube-summary', methods=['POST'])
 def youtube_summary_api():
-    data = request.get_json()
-    video_link = data['video_link']
-    res = video_summary(video_link)
-    print(res['summary'].content)
-    return {"video_summary":res['summary'].content}
+    try:
+        data = request.get_json()
+        video_link = data.get('video_link')
 
-@app.route('/audio-summary',methods=['POST'])
+        if not video_link:
+            return jsonify({"error": "No video link provided"}), 400
+
+        result = video_summary(video_link)
+        return jsonify({"video_summary": result["summary"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# =============================
+# AUDIO SUMMARY
+# =============================
+@app.route('/audio-summary', methods=['POST'])
 def audio_summary_api():
-    
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
-    
-    filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-    file.save(os.path.join('data', filename))
-    res = audio_summary(filename)
-    os.remove(os.path.join('data', filename))
+        file = request.files['file']
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        filepath = os.path.join(DATA_FOLDER, filename)
 
-    # print(res['summary'].content)
-    return {"audio_summary":res['summary'].content}
+        file.save(filepath)
 
-@app.route('/image-summary',methods=['POST'])
+        result = audio_summary(filename)
+
+        os.remove(filepath)
+
+        return jsonify({"audio_summary": result["summary"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# =============================
+# IMAGE SUMMARY
+# =============================
+@app.route('/image-summary', methods=['POST'])
 def image_summary_api():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    try:
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+        file = request.files['file']
+        filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
+        filepath = os.path.join(DATA_FOLDER, filename)
 
-    filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
-    file.save(os.path.join('data', filename))
-    # if not file.filename.endswith('.png') or file.filename.endswith('.jpeg') or file.filename.endswith('.jpg'):
-    #     return jsonify({"error": "Invalid file type. Please upload a image file"}), 400
-    summary = image_summary(filename)
-    os.remove(os.path.join('data', filename))
-    return jsonify({"summary": summary['summary'].content})
+        file.save(filepath)
 
-@app.route('/pdf-chatbot',methods=['POST'])
+        result = image_summary(filename)
+
+        os.remove(filepath)
+
+        return jsonify({"summary": result["summary"]})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# =============================
+# PDF CHATBOT
+# =============================
+@app.route('/pdf-chatbot', methods=['POST'])
 def pdf_chatbot():
-    if 'file' not in request.files:
-        if 'message' not in request.form:
-            return jsonify({"error": "No Mesage found"}), 400
-        message = request.form['message']
-        response = get_chatbot_response(message=message)
+    try:
+        if 'file' not in request.files:
+            message = request.form.get('message')
+            response = get_chatbot_response(message=message)
+            return jsonify({"response": response})
+
+        file = request.files['file']
+        response = get_chatbot_response(file=file)
+
         return jsonify({"response": response})
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    if not file.filename.endswith('.pdf'):
-        return jsonify({"error": "Invalid file type. Please upload a .pdf file"}), 400
-    
-    response = get_chatbot_response(file=file)
 
-    return jsonify({"response": response})
-
-@app.route('/docx-chatbot',methods=['POST'])
+# =============================
+# DOCX CHATBOT
+# =============================
+@app.route('/docx-chatbot', methods=['POST'])
 def docx_chatbot():
-    if 'file' not in request.files:
-        if 'message' not in request.form:
-            return jsonify({"error": "No Mesage found"}), 400
-        message = request.form['message']
-        response = get_chatbot_response1(message=message)
+    try:
+        if 'file' not in request.files:
+            message = request.form.get('message')
+            response = get_chatbot_response1(message=message)
+            return jsonify({"response": response})
+
+        file = request.files['file']
+        response = get_chatbot_response1(file=file)
+
         return jsonify({"response": response})
 
-    file = request.files['file']
-   
-    if file.filename == '':
-        return jsonify({"error": "No selected file"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    if not file.filename.endswith('.docx'):
-        return jsonify({"error": "Invalid file type. Please upload a .docx file"}), 400
-    
-    response = get_chatbot_response1(file=file)
 
-    return jsonify({"response": response})
-
+# =============================
+# SENTIMENT ANALYSIS
+# =============================
 @app.route('/sentiment-analysis', methods=['POST'])
-def sentiment_analysis():
-    data = request.get_json()
-    text = data['text']
-    sentiment, analysis = get_sentiment_analysis(text)
-    return jsonify({"sentiment": sentiment, "analysis": analysis})
+def sentiment_analysis_api():
+    try:
+        data = request.get_json()
+        text = data.get('text')
+
+        if not text:
+            return jsonify({"error": "No text provided"}), 400
+
+        sentiment, analysis = get_sentiment_analysis(text)
+
+        return jsonify({
+            "sentiment": sentiment,
+            "analysis": analysis
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
+# =============================
+# RUN SERVER
+# =============================
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run()

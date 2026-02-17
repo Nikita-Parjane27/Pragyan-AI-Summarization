@@ -27,7 +27,7 @@ def get_chatbot_response1(file=None, message=None):
         text = text[:15000]
 
         response = client.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.5-flash",
             contents=f"""
             Provide a clear and concise summary of the following document.
             Return summary only.
