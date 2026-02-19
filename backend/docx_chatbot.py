@@ -1,4 +1,4 @@
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 from docx import Document
 import os

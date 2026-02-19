@@ -1,5 +1,5 @@
 import pandas as pd
-from google import genai
+import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 
