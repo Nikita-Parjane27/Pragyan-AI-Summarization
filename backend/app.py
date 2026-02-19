@@ -273,6 +273,10 @@ def sentiment_analysis_api():
 # =============================
 # RUN SERVER
 # =============================
+@app.route('/')
+def home():
+    return jsonify({"status": "Backend is running!"}), 200
+    
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
