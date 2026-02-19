@@ -24,7 +24,7 @@ export default function ImageSummarizer() {
       const formData = new FormData();
       formData.append("file", image);
 
-      const response = await fetch("http://localhost:5000/image-summary", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//image-summary", {
         method: "POST",
         body: formData,
       });

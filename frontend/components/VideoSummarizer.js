@@ -16,7 +16,7 @@ export default function VideoSummarizer() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/youtube-summary", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//youtube-summary", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

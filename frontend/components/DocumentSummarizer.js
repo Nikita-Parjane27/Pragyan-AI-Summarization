@@ -26,7 +26,7 @@ export default function DocumentSummarizer() {
         formData.append("file", file);
 
         try {
-            const response = await fetch("http://localhost:5000/docx-chatbot", {
+            const response = await fetch("https://pragyan-ai-hbxg.onrender.com//docx-chatbot", {
                 method: "POST",
                 body: formData
             });
@@ -68,7 +68,7 @@ export default function DocumentSummarizer() {
         const formData = new FormData();
         formData.append("message", prompt);
 
-        const response = await fetch("http://localhost:5000/docx-chatbot", {
+        const response = await fetch("https://pragyan-ai-hbxg.onrender.com//docx-chatbot", {
             method: "POST",
             body: formData
         });

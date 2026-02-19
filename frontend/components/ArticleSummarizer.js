@@ -15,7 +15,7 @@ export default function ArticleSummarizer() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/article-summary", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//article-summary", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

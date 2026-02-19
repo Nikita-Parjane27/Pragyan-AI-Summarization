@@ -31,7 +31,7 @@ export default function AudioSummarizer() {
       const formData = new FormData();
       formData.append("file", audio);
 
-      const response = await fetch("http://localhost:5000/audio-summary", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//audio-summary", {
         method: "POST",
         body: formData,
       });

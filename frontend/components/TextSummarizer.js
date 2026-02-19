@@ -16,7 +16,7 @@ export default function TextSummarizer() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/text-summarize", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//text-summarize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

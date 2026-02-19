@@ -18,7 +18,7 @@ export default function SentimentAnalysis() {
         setMessage("");
 
         try {
-            const response = await fetch("http://localhost:5000/sentiment-analysis", {
+            const response = await fetch("https://pragyan-ai-hbxg.onrender.com//sentiment-analysis", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -24,7 +24,7 @@ export default function ExcelSummarizer() {
       const formData = new FormData();
       formData.append("file", image);
 
-      const response = await fetch("http://localhost:5000/excel-summary", {
+      const response = await fetch("https://pragyan-ai-hbxg.onrender.com//excel-summary", {
         method: "POST",
         body: formData,
       });
