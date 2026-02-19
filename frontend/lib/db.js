@@ -1,19 +1,10 @@
-import mysql from "mysql2/promise";
+import { Pool } from "pg";
 
-export async function query({ query, values = [] }) {
-  const dbconnection = await mysql.createConnection({
-    host: process.env.MYSQL_HOST,
-    database: process.env.MYSQL_DATABASE,
-    user: process.env.MYSQL_USER,
-    password: process.env.MYSQL_PASSWORD,
-  });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
 
-  try {
-    const [results] = await dbconnection.execute(query, values);
-    dbconnection.end();
-    return results;
-  } catch (error) {
-    throw Error(error.message);
-    return { error };
-  }
-}
+export default pool;

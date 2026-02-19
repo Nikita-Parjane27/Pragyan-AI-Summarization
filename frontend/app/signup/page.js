@@ -30,6 +30,7 @@ export default function Signup() {
   const handleAcceptTermsChange = (e) => {
     setAcceptTerms(e.target.checked);
   };
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -38,10 +39,10 @@ export default function Signup() {
       return;
     }
 
-    const response = await fetch("/api/auth", {
+    const response = await fetch("/api/auth/signup", {  // ✅ fixed route
       method: "POST",
       headers: {
-        "Content-Type": "applicatiom/json",
+        "Content-Type": "application/json",  // ✅ fixed typo
       },
       body: JSON.stringify({
         name: fullname,
@@ -64,7 +65,7 @@ export default function Signup() {
         >
           <img
             src="https://flowbite.com/docs/images/logo.svg"
-            class="h-8 me-3"
+            className="h-8 me-3"
             alt="FlowBite Logo"
           />
           प्रज्ञान Ai
@@ -72,7 +73,7 @@ export default function Signup() {
         <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
           <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-              Create and account
+              Create an account
             </h1>
             <form
               className="space-y-4 md:space-y-6"
@@ -115,7 +116,6 @@ export default function Signup() {
                   required
                 />
               </div>
-
               <div>
                 <label
                   htmlFor="password"
@@ -152,7 +152,6 @@ export default function Signup() {
                   required
                 />
               </div>
-
               <div className="flex items-start">
                 <div className="flex items-center h-5">
                   <input
