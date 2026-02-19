@@ -1,51 +1,51 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Login() {
-  const [username, setUsername] = useState();
-  const [password, setPassword] = useState();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const router = useRouter();
 
- async function handleSubmit(e) {
-  e.preventDefault();
+  async function handleSubmit(e) {
+    e.preventDefault();
 
-  const response = await fetch("/api/auth/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      username,
-      password,
-    }),
-  });
+    const response = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    });
 
-  const text = await response.text();
-  let data = null;
+    const text = await response.text();
+    let data = null;
 
-  if (text) {
-    data = JSON.parse(text);
+    if (text) {
+      data = JSON.parse(text);
+    }
+
+    // ❌ Login failed
+    if (!response.ok) {
+      setMessage(data?.message || "Invalid username or password");
+      return;
+    }
+
+    // ✅ Login success - Supabase returns user as object, not array
+    const userId = data.user?.user_metadata?.full_name || data.user?.email;
+    const id = data.user?.id;
+
+    localStorage.setItem("name", userId);
+    localStorage.setItem("id", id);
+    localStorage.setItem("username", username);
+
+    router.push("/");
   }
-
-  // ❌ Login failed
-  if (!response.ok) {
-    setMessage(data?.error || "Invalid username or password");
-    return;
-  }
-
-  // ✅ Login success
-  const userId = data.user[0].name;
-  const id = data.user[0].id;
-
-  localStorage.setItem("name", userId);
-  localStorage.setItem("id", id);
-  localStorage.setItem("username", username);
-
-  router.push("/");
-}
 
   return (
     <section className="bg-gray-50 dark:bg-gray-900">
@@ -56,7 +56,7 @@ export default function Login() {
         >
           <img
             src="https://flowbite.com/docs/images/logo.svg"
-            class="h-8 me-3"
+            className="h-8 me-3"
             alt="FlowBite Logo"
           />
           प्रज्ञान Ai
@@ -76,14 +76,14 @@ export default function Login() {
                   className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
                   role="alert"
                 >
-                  <strong className="font-bold">Error : </strong>
+                  <strong className="font-bold">Error: </strong>
                   <span className="block sm:inline">{message}</span>
                 </div>
               )}
 
               <div>
                 <label
-                  for="email"
+                  htmlFor="email"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Your Email
@@ -93,14 +93,14 @@ export default function Login() {
                   name="email"
                   id="email"
                   className="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-600 focus:border-blue-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder="Username"
+                  placeholder="name@company.com"
                   onChange={(e) => setUsername(e.target.value)}
                   required
                 />
               </div>
               <div>
                 <label
-                  for="password"
+                  htmlFor="password"
                   className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                 >
                   Password
@@ -123,7 +123,7 @@ export default function Login() {
                 Sign in
               </button>
               <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                Don’t have an account yet?{" "}
+                Don't have an account yet?{" "}
                 <Link
                   href="/signup"
                   className="font-medium text-blue-600 hover:underline dark:text-blue-500"
