@@ -1,6 +1,6 @@
 Flask
 pandas
-google-generativeai
+google-genai
 langchain
 python-dotenv
 python-docx

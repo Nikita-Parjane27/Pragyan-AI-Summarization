@@ -1,5 +1,5 @@
 from youtube_transcript_api import YouTubeTranscriptApi
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from urllib.parse import urlparse, parse_qs
 import os
